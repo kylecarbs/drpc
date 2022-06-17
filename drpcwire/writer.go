@@ -55,7 +55,7 @@ func (b *Writer) Empty() bool {
 // Reset clears any pending data in the buffer.
 func (b *Writer) Reset() *Writer {
 	b.mu.Lock()
-	b.buf = b.buf[:0]
+	b.buf = make([]byte, 0, b.size)
 	b.mu.Unlock()
 	return b
 }
@@ -70,7 +70,7 @@ func (b *Writer) WriteFrame(fr Frame) (err error) {
 	b.buf = AppendFrame(b.buf, fr)
 	if len(b.buf) >= b.size {
 		_, err = b.w.Write(b.buf)
-		b.buf = b.buf[:0]
+		b.buf = make([]byte, 0, b.size)
 		atomic.StoreUint32(&b.empty, 0)
 	}
 	b.mu.Unlock()
@@ -83,7 +83,7 @@ func (b *Writer) Flush() (err error) {
 	b.mu.Lock()
 	if len(b.buf) > 0 {
 		_, err = b.w.Write(b.buf)
-		b.buf = b.buf[:0]
+		b.buf = make([]byte, 0, b.size)
 		atomic.StoreUint32(&b.empty, 0)
 	}
 	b.mu.Unlock()
